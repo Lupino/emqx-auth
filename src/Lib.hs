@@ -116,8 +116,8 @@ lookupUser Config {..} key token =
 
 authReqHandler :: Config -> ActionM ()
 authReqHandler config = do
-  key <- param "key"
-  token <- param "token"
+  key <- param "username"
+  token <- param "password"
   r <- liftIO $ lookupUser config key token
   case r of
     Nothing -> do
