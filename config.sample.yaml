@@ -1,6 +1,6 @@
 host: 0.0.0.0
 port: 8991
-services: services.yml
+services: /services.yml
 
 admin: admin
 password: "password"
