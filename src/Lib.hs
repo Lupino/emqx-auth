@@ -5,6 +5,8 @@ module Lib
   ( someFunc
   ) where
 
+import           Control.Concurrent.STM   (TVar, atomically, newTVarIO,
+                                           readTVarIO, writeTVar)
 import           Control.Exception        (try)
 import           Control.Monad.IO.Class   (liftIO)
 import           Data.Aeson               (FromJSON (..), ToJSON (..),
@@ -58,8 +60,11 @@ instance FromJSON Service where
   parseJSON invalid    = typeMismatch "Service" invalid
 
 
+type ServiceList = TVar [Service]
+
+
 data Config = Config
-    { services      :: [Service]
+    { servicePath   :: FilePath
     , admin         :: String
     , adminPassword :: String
     , srvPort       :: Int
@@ -80,14 +85,25 @@ initService service = do
   newEndpoint <- initGateway $ endpoint service
   return service { endpoint = newEndpoint }
 
-initConfig :: Config -> IO Config
-initConfig config = do
-  newServices <- mapM initService $ services config
-  return config { services = newServices }
+-- initConfig :: Config -> IO Config
+-- initConfig config = do
+--   newServices <- mapM initService $ services config
+--   return config { services = newServices }
 
 getService :: [Service] -> String -> Maybe Service
 getService srvs key = find findFunc srvs
   where findFunc v = appKey (endpoint v) == key
+
+
+loadService :: FilePath -> ServiceList -> IO ()
+loadService fn ref = do
+  s <- Y.decodeFileEither fn
+  case s of
+    Left e     -> print e
+    Right srvs -> do
+      srvs' <- mapM initService srvs
+      atomically $ writeTVar ref srvs'
+
 
 -- get   "/api/devices/:uuidOrToken/"
 getUUID :: Gateway -> String -> IO (OkResult UUID)
@@ -97,13 +113,14 @@ getUUID gw token = do
   where path = concat [ "/api/devices/", token, "/"]
         uri = host gw ++ path
 
-lookupUser :: Config -> String -> String -> IO (Maybe User)
-lookupUser Config {..} key token =
+lookupUser :: Config -> ServiceList -> String -> String -> IO (Maybe User)
+lookupUser Config {..} ref key token =
   if admin == key then
     if adminPassword == token then pure $ Just SuperAdmin
                               else pure Nothing
-  else
-    case getService services key of
+  else do
+    srvs <- readTVarIO ref
+    case getService srvs key of
       Nothing -> pure Nothing
       Just Service {..} ->
         if password == token then pure $ Just $ Admin $ MountPoint $ '/' : key
@@ -114,11 +131,11 @@ lookupUser Config {..} key token =
             Right (OkResult (UUID u0)) ->
               pure $ Just $ Normal $ MountPoint $ "/" ++ key ++ "/" ++ u0
 
-authReqHandler :: Config -> ActionM ()
-authReqHandler config = do
+authReqHandler :: Config -> ServiceList -> ActionM ()
+authReqHandler config ref = do
   key <- param "username"
   token <- param "password"
-  r <- liftIO $ lookupUser config key token
+  r <- liftIO $ lookupUser config ref key token
   case r of
     Nothing -> do
       status status400
@@ -131,11 +148,17 @@ superReqHandler = text "ok"
 aclReqHandler :: ActionM ()
 aclReqHandler = text "ok"
 
-application :: Config -> ScottyM ()
-application config = do
+configReloadHandler :: Config -> ServiceList -> ActionM ()
+configReloadHandler Config {..} ref = do
+  liftIO $ loadService servicePath ref
+  text "ok"
+
+application :: Config -> ServiceList -> ScottyM ()
+application config ref = do
   post "/mqtt/acl" aclReqHandler
   post "/mqtt/superuser" superReqHandler
-  post "/mqtt/auth" $ authReqHandler config
+  post "/mqtt/auth" $ authReqHandler config ref
+  post "/config/reload" $ configReloadHandler config ref
 
 newtype Options = Options {getConfigFile :: String}
 
@@ -162,4 +185,6 @@ program Options{getConfigFile=configPath} = do
     Right conf@Config{..} -> do
       let opts = def {settings = setPort srvPort
                                $ setHost (fromString srvHost) (settings def)}
-      scottyOpts opts $ application conf
+      ref <- newTVarIO []
+      loadService servicePath ref
+      scottyOpts opts $ application conf ref

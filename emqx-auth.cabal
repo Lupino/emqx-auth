@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ea2b991778edc0bda27b4cf03686b0c25e3c458a165b03db3181f8ef0adcba4c
+-- hash: 47a0daf09c2beea9c5d20075520f2a257b68019baab8cf85c54a7daae265512b
 
 name:           emqx-auth
 version:        0.1.0.0
@@ -40,6 +40,7 @@ library
     , http-types
     , optparse-applicative
     , scotty
+    , stm
     , streaming-commons
     , transformers
     , warp

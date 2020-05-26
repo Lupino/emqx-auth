@@ -39,6 +39,7 @@ library:
   - streaming-commons
   - warp
   - data-default-class
+  - stm
 
 executables:
   emqx-auth-exe:
