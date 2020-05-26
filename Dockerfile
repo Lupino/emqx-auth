@@ -16,7 +16,7 @@ RUN stack install --local-bin-path bin
 
 FROM ubuntu:20.04
 
-RUN apt-get update && apt-get install -y libatomic1
+RUN apt-get update && apt-get install -y ca-certificates
 
 COPY --from=0 /data/bin/* /usr/bin/
 COPY config.sample.yaml /config.yaml
