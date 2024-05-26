@@ -17,7 +17,7 @@
 #
 # resolver: ./custom-snapshot.yaml
 # resolver: https://example.com/snapshots/2018-01-01.yaml
-resolver: lts-15.13
+resolver: lts-22.17
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.
@@ -39,19 +39,6 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
-extra-deps:
-- git: https://github.com/Lupino/yuntan-base.git
-  commit: b7ec8bc56117d8cfc5c842fba06dafdf2462fce2
-  subdirs:
-  - yuntan-base
-- git: https://github.com/Lupino/yuntan-common.git
-  commit: 350bda5b5dbb542e57a408c4a6618fd51d2070ea
-  subdirs:
-  - yuntan-common-list-result
-  - yuntan-common-result
-  - yuntan-common-json
-  - yuntan-common-signature
-  - yuntan-common-wreq
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

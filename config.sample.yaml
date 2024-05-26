@@ -1,6 +1,9 @@
 host: 0.0.0.0
 port: 8991
-services: /services.yml
+service:
+  host: http://localhost:3000
+  timeout: 30
+  conn-count: 10
 
 admin: admin
 password: "password"

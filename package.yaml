@@ -25,21 +25,16 @@ dependencies:
 library:
   source-dirs: src
   dependencies:
-  - yuntan-base
-  - wreq
-  - yuntan-common-wreq
-  - yuntan-common-result
   - hslogger
   - aeson
   - scotty
-  - transformers
   - http-types
   - optparse-applicative
   - yaml
-  - streaming-commons
   - warp
   - data-default-class
-  - stm
+
+  - http-client
 
 executables:
   emqx-auth-exe:

@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.33.0.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 47a0daf09c2beea9c5d20075520f2a257b68019baab8cf85c54a7daae265512b
+-- hash: 460c530bbaa5e38bfb83e99010b68294923ad85a32527194bc83b9cca8289fe7
 
 name:           emqx-auth
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      API
       Lib
   other-modules:
       Paths_emqx_auth
@@ -37,18 +38,12 @@ library
     , base >=4.7 && <5
     , data-default-class
     , hslogger
+    , http-client
     , http-types
     , optparse-applicative
     , scotty
-    , stm
-    , streaming-commons
-    , transformers
     , warp
-    , wreq
     , yaml
-    , yuntan-base
-    , yuntan-common-result
-    , yuntan-common-wreq
   default-language: Haskell2010
 
 executable emqx-auth-exe
